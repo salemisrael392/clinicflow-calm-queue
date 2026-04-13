@@ -20,7 +20,7 @@ export default function ManageDoctors() {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Doctor | null>(null);
-  const [form, setForm] = useState({ name: "", specialty: "" });
+  const [form, setForm] = useState({ name: "", specialty: "", qualification: "", years_of_experience: "", consultation_fee: "" });
 
   const fetchDoctors = async () => {
     let q = supabase.from("doctors").select("*").order("name");
@@ -35,18 +35,19 @@ export default function ManageDoctors() {
 
   const handleSave = async () => {
     if (!form.name || !form.specialty) return;
+    const payload: any = { name: form.name, specialty: form.specialty, qualification: form.qualification || null, years_of_experience: form.years_of_experience ? parseInt(form.years_of_experience) : null, consultation_fee: form.consultation_fee ? parseFloat(form.consultation_fee) : null };
     if (editing) {
-      const { error } = await supabase.from("doctors").update(form).eq("id", editing.id);
+      const { error } = await supabase.from("doctors").update(payload).eq("id", editing.id);
       if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
       toast({ title: "Doctor updated" });
     } else {
-      const { error } = await supabase.from("doctors").insert(form);
+      const { error } = await supabase.from("doctors").insert(payload);
       if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
       toast({ title: "Doctor added" });
     }
     setOpen(false);
     setEditing(null);
-    setForm({ name: "", specialty: "" });
+    setForm({ name: "", specialty: "", qualification: "", years_of_experience: "", consultation_fee: "" });
     fetchDoctors();
   };
 
@@ -59,13 +60,13 @@ export default function ManageDoctors() {
 
   const openEdit = (doc: Doctor) => {
     setEditing(doc);
-    setForm({ name: doc.name, specialty: doc.specialty });
+    setForm({ name: doc.name, specialty: doc.specialty, qualification: (doc as any).qualification || "", years_of_experience: (doc as any).years_of_experience?.toString() || "", consultation_fee: (doc as any).consultation_fee?.toString() || "" });
     setOpen(true);
   };
 
   const openNew = () => {
     setEditing(null);
-    setForm({ name: "", specialty: "" });
+    setForm({ name: "", specialty: "", qualification: "", years_of_experience: "", consultation_fee: "" });
     setOpen(true);
   };
 
