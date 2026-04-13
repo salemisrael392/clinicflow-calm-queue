@@ -105,6 +105,7 @@ export type Database = {
           name: string
           specialty: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -114,6 +115,7 @@ export type Database = {
           name: string
           specialty: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -123,6 +125,7 @@ export type Database = {
           name?: string
           specialty?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -208,11 +211,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_doctor_id_for_user: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_own_doctor_record: {
+        Args: { _doctor_id: string; _user_id: string }
         Returns: boolean
       }
     }

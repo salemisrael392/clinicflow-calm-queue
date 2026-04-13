@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,8 @@ interface AppointmentRow {
 
 export default function QueueControl() {
   const { toast } = useToast();
+  const { role, user } = useAuth();
+  const isDoctor = role === "doctor";
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [appointments, setAppointments] = useState<AppointmentRow[]>([]);
@@ -28,7 +31,11 @@ export default function QueueControl() {
   const today = format(new Date(), "yyyy-MM-dd");
 
   useEffect(() => {
-    supabase.from("doctors").select("*").order("name").then(({ data }) => {
+    let q = supabase.from("doctors").select("*").order("name");
+    if (isDoctor && user) {
+      q = q.eq("user_id", user.id);
+    }
+    q.then(({ data }) => {
       setDoctors(data ?? []);
       if (data?.length && !selectedDoctor) setSelectedDoctor(data[0].id);
     });
@@ -58,24 +65,17 @@ export default function QueueControl() {
   useEffect(() => { fetchQueue(); }, [selectedDoctor]);
 
   const setServing = async (token: string) => {
-    // Upsert queue_status
-    const { error: qError } = await supabase.from("queue_status").upsert(
+    await supabase.from("queue_status").upsert(
       { doctor_id: selectedDoctor, queue_date: today, current_token: token },
       { onConflict: "doctor_id,queue_date" }
     );
-    // Update appointment status
     await supabase.from("appointments")
       .update({ status: "in_progress" })
       .eq("doctor_id", selectedDoctor)
       .eq("appointment_date", today)
       .eq("token_number", token);
-
-    if (qError) {
-      toast({ title: "Error", description: qError.message, variant: "destructive" });
-    } else {
-      toast({ title: `Now serving ${token}` });
-      fetchQueue();
-    }
+    toast({ title: `Now serving ${token}` });
+    fetchQueue();
   };
 
   const completeToken = async (aptId: string) => {
@@ -102,22 +102,23 @@ export default function QueueControl() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Queue Control</h1>
-        <p className="text-muted-foreground mt-1">Manage patient queues for today</p>
+        <h1 className="text-2xl font-bold text-foreground">{isDoctor ? "My Queue" : "Queue Control"}</h1>
+        <p className="text-muted-foreground mt-1">{isDoctor ? "Manage your patient queue for today" : "Manage patient queues for today"}</p>
       </div>
 
       <div className="flex items-center gap-4">
-        <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
-          <SelectTrigger className="w-[250px]">
-            <SelectValue placeholder="Select doctor" />
-          </SelectTrigger>
-          <SelectContent>
-            {doctors.map((d) => (
-              <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
+        {!isDoctor && (
+          <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
+            <SelectTrigger className="w-[250px]">
+              <SelectValue placeholder="Select doctor" />
+            </SelectTrigger>
+            <SelectContent>
+              {doctors.map((d) => (
+                <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <Button onClick={callNext} className="gap-2">
           <SkipForward className="h-4 w-4" /> Call Next
         </Button>

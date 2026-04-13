@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -27,14 +28,28 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AllAppointments() {
+  const { role, user } = useAuth();
+  const isDoctor = role === "doctor";
   const [appointments, setAppointments] = useState<AppointmentRow[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [filterDoctor, setFilterDoctor] = useState("all");
   const [filterDate, setFilterDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [filterStatus, setFilterStatus] = useState("all");
+  const [myDoctorId, setMyDoctorId] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.from("doctors").select("*").order("name").then(({ data }) => setDoctors(data ?? []));
+    const fetchDoctors = async () => {
+      let q = supabase.from("doctors").select("*").order("name");
+      if (isDoctor && user) {
+        q = q.eq("user_id", user.id);
+      }
+      const { data } = await q;
+      setDoctors(data ?? []);
+      if (isDoctor && data?.length) {
+        setMyDoctorId(data[0].id);
+      }
+    };
+    fetchDoctors();
   }, []);
 
   useEffect(() => {
@@ -46,31 +61,37 @@ export default function AllAppointments() {
         .order("token_number");
 
       if (filterDate) q = q.eq("appointment_date", filterDate);
-      if (filterDoctor !== "all") q = q.eq("doctor_id", filterDoctor);
+      if (isDoctor && myDoctorId) {
+        q = q.eq("doctor_id", myDoctorId);
+      } else if (filterDoctor !== "all") {
+        q = q.eq("doctor_id", filterDoctor);
+      }
       if (filterStatus !== "all") q = q.eq("status", filterStatus);
 
       const { data } = await q;
       setAppointments((data as any) ?? []);
     };
     fetchAppts();
-  }, [filterDoctor, filterDate, filterStatus]);
+  }, [filterDoctor, filterDate, filterStatus, myDoctorId]);
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">All Appointments</h1>
-        <p className="text-muted-foreground mt-1">View and filter appointments</p>
+        <h1 className="text-2xl font-bold text-foreground">{isDoctor ? "My Appointments" : "All Appointments"}</h1>
+        <p className="text-muted-foreground mt-1">{isDoctor ? "View your patient appointments" : "View and filter appointments"}</p>
       </div>
 
       <div className="flex flex-wrap gap-3">
         <Input type="date" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} className="w-[180px]" />
-        <Select value={filterDoctor} onValueChange={setFilterDoctor}>
-          <SelectTrigger className="w-[200px]"><SelectValue placeholder="All Doctors" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Doctors</SelectItem>
-            {doctors.map((d) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
-          </SelectContent>
-        </Select>
+        {!isDoctor && (
+          <Select value={filterDoctor} onValueChange={setFilterDoctor}>
+            <SelectTrigger className="w-[200px]"><SelectValue placeholder="All Doctors" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Doctors</SelectItem>
+              {doctors.map((d) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        )}
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-[160px]"><SelectValue placeholder="All Status" /></SelectTrigger>
           <SelectContent>
@@ -88,7 +109,7 @@ export default function AllAppointments() {
           <TableHeader>
             <TableRow>
               <TableHead>Token</TableHead>
-              <TableHead>Doctor</TableHead>
+              {!isDoctor && <TableHead>Doctor</TableHead>}
               <TableHead>Date</TableHead>
               <TableHead>Time</TableHead>
               <TableHead>Status</TableHead>
@@ -98,7 +119,7 @@ export default function AllAppointments() {
             {appointments.map((apt) => (
               <TableRow key={apt.id}>
                 <TableCell className="font-bold">{apt.token_number}</TableCell>
-                <TableCell>{apt.doctors?.name}</TableCell>
+                {!isDoctor && <TableCell>{apt.doctors?.name}</TableCell>}
                 <TableCell>{format(new Date(apt.appointment_date), "PP")}</TableCell>
                 <TableCell>{format(parse(apt.time_slot, "HH:mm:ss", new Date()), "h:mm a")}</TableCell>
                 <TableCell>
@@ -110,7 +131,7 @@ export default function AllAppointments() {
             ))}
             {appointments.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={isDoctor ? 4 : 5} className="text-center py-8 text-muted-foreground">
                   No appointments found
                 </TableCell>
               </TableRow>

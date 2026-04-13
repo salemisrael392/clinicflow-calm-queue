@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,8 @@ const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", 
 
 export default function ManageSchedules() {
   const { toast } = useToast();
+  const { role, user } = useAuth();
+  const isDoctor = role === "doctor";
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<string>("");
@@ -24,7 +27,11 @@ export default function ManageSchedules() {
   const [form, setForm] = useState({ day_of_week: "1", start_time: "09:00", end_time: "17:00", slot_duration_minutes: "15" });
 
   const fetchData = async () => {
-    const { data: docs } = await supabase.from("doctors").select("*").order("name");
+    let q = supabase.from("doctors").select("*").order("name");
+    if (isDoctor && user) {
+      q = q.eq("user_id", user.id);
+    }
+    const { data: docs } = await q;
     setDoctors(docs ?? []);
     if (docs?.length && !selectedDoctor) setSelectedDoctor(docs[0].id);
   };
@@ -62,22 +69,24 @@ export default function ManageSchedules() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Manage Schedules</h1>
-          <p className="text-muted-foreground mt-1">Set doctor availability</p>
+          <h1 className="text-2xl font-bold text-foreground">{isDoctor ? "My Schedule" : "Manage Schedules"}</h1>
+          <p className="text-muted-foreground mt-1">{isDoctor ? "Set your availability" : "Set doctor availability"}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-4">
-        <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
-          <SelectTrigger className="w-[250px]">
-            <SelectValue placeholder="Select doctor" />
-          </SelectTrigger>
-          <SelectContent>
-            {doctors.map((d) => (
-              <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {!isDoctor && (
+          <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
+            <SelectTrigger className="w-[250px]">
+              <SelectValue placeholder="Select doctor" />
+            </SelectTrigger>
+            <SelectContent>
+              {doctors.map((d) => (
+                <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -119,7 +128,7 @@ export default function ManageSchedules() {
         {schedules.length === 0 ? (
           <Card className="border-border/50">
             <CardContent className="py-8 text-center text-muted-foreground">
-              No schedules set for this doctor
+              {isDoctor ? "You haven't set any schedules yet" : "No schedules set for this doctor"}
             </CardContent>
           </Card>
         ) : (
