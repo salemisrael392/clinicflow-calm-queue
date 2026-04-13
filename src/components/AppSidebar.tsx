@@ -30,13 +30,21 @@ const adminItems = [
   { title: "All Appointments", url: "/admin/appointments", icon: CalendarDays },
 ];
 
+const doctorItems = [
+  { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
+  { title: "My Profile", url: "/admin/doctors", icon: Stethoscope },
+  { title: "My Schedule", url: "/admin/schedules", icon: CalendarClock },
+  { title: "My Queue", url: "/admin/queue", icon: ListOrdered },
+  { title: "My Appointments", url: "/admin/appointments", icon: CalendarDays },
+];
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { role, signOut, user } = useAuth();
   const location = useLocation();
 
-  const items = role === "admin" ? adminItems : role === "doctor" ? adminItems : patientItems;
+  const items = role === "admin" ? adminItems : role === "doctor" ? doctorItems : patientItems;
   const isActive = (path: string) => location.pathname === path;
 
   return (
