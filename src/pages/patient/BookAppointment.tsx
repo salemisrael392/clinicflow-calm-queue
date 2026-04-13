@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, CalendarDays, CheckCircle2, Clock, GraduationCap, DollarSign } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ArrowLeft, CalendarDays, CheckCircle2, Clock, GraduationCap, DollarSign, AlertTriangle, Info } from "lucide-react";
 import { format, addMinutes, parse, isToday, isBefore } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -27,34 +28,83 @@ export default function BookAppointment() {
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [confirmedToken, setConfirmedToken] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingSchedules, setLoadingSchedules] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchData = async () => {
       const [docRes, schedRes] = await Promise.all([
         supabase.from("doctors").select("*").eq("id", doctorId!).single(),
         supabase.from("doctor_schedules").select("*").eq("doctor_id", doctorId!),
       ]);
       setDoctor(docRes.data);
       setSchedules(schedRes.data ?? []);
+      setLoadingSchedules(false);
     };
-    fetch();
+    fetchData();
   }, [doctorId]);
 
-  // Fetch booked slots when date changes
-  useEffect(() => {
+  // Fetch booked slots for selected date
+  const fetchBookedSlots = useCallback(async () => {
     if (!selectedDate || !doctorId) return;
-    setSelectedSlot(null);
     const dateStr = format(selectedDate, "yyyy-MM-dd");
-    supabase
+    const { data } = await supabase
       .from("appointments")
       .select("time_slot")
       .eq("doctor_id", doctorId)
       .eq("appointment_date", dateStr)
-      .neq("status", "cancelled")
-      .then(({ data }) => {
-        setBookedSlots(data?.map((a) => a.time_slot) ?? []);
-      });
+      .neq("status", "cancelled");
+    setBookedSlots(data?.map((a) => a.time_slot) ?? []);
   }, [selectedDate, doctorId]);
+
+  useEffect(() => {
+    if (!selectedDate) return;
+    setSelectedSlot(null);
+    fetchBookedSlots();
+  }, [selectedDate, fetchBookedSlots]);
+
+  // Realtime: listen for new bookings on this doctor so slots update live
+  useEffect(() => {
+    if (!doctorId) return;
+
+    const channel = supabase
+      .channel(`appointments-${doctorId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "appointments",
+          filter: `doctor_id=eq.${doctorId}`,
+        },
+        (payload) => {
+          // Re-fetch booked slots when any appointment changes
+          fetchBookedSlots();
+
+          // If someone just booked the slot the current user selected, notify them
+          if (payload.eventType === "INSERT" && selectedSlot) {
+            const newAppt = payload.new as any;
+            if (
+              selectedDate &&
+              newAppt.appointment_date === format(selectedDate, "yyyy-MM-dd") &&
+              newAppt.time_slot === selectedSlot &&
+              newAppt.patient_id !== user?.id
+            ) {
+              setSelectedSlot(null);
+              toast({
+                title: "Slot just taken!",
+                description: "Another patient booked this slot. Please pick a different time.",
+                variant: "destructive",
+              });
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [doctorId, selectedDate, selectedSlot, user?.id, fetchBookedSlots, toast]);
 
   const daySchedule = selectedDate
     ? schedules.find((s) => s.day_of_week === selectedDate.getDay())
@@ -75,7 +125,8 @@ export default function BookAppointment() {
     return slots;
   };
 
-  const availableSlots = generateSlots().filter((s) => !bookedSlots.includes(s));
+  const allSlots = generateSlots();
+  const availableSlots = allSlots.filter((s) => !bookedSlots.includes(s));
 
   const availableDays = schedules.map((s) => s.day_of_week);
   const disabledDays = (date: Date) => {
@@ -88,7 +139,7 @@ export default function BookAppointment() {
     setSubmitting(true);
     const dateStr = format(selectedDate, "yyyy-MM-dd");
 
-    // Generate token: prefix from specialty + sequential number
+    // Generate token
     const { count } = await supabase
       .from("appointments")
       .select("id", { count: "exact", head: true })
@@ -110,7 +161,18 @@ export default function BookAppointment() {
 
     setSubmitting(false);
     if (error) {
-      toast({ title: "Booking failed", description: error.message, variant: "destructive" });
+      if (error.code === "23505") {
+        // Unique constraint violation — slot was just taken
+        toast({
+          title: "Slot already booked!",
+          description: "Another patient just booked this time slot. Please select a different one.",
+          variant: "destructive",
+        });
+        setSelectedSlot(null);
+        fetchBookedSlots();
+      } else {
+        toast({ title: "Booking failed", description: error.message, variant: "destructive" });
+      }
     } else {
       setConfirmedToken(tokenNumber);
     }
@@ -144,6 +206,8 @@ export default function BookAppointment() {
     );
   }
 
+  const hasNoSchedules = !loadingSchedules && schedules.length === 0;
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
@@ -159,79 +223,100 @@ export default function BookAppointment() {
               </div>
               <div>
                 <CardTitle>{doctor.name}</CardTitle>
-                <CardDescription className="flex flex-wrap items-center gap-2 mt-1">
+                <div className="flex flex-wrap items-center gap-2 mt-1">
                   <Badge variant="secondary">{doctor.specialty}</Badge>
                   {(doctor as any).qualification && (
-                    <span className="text-xs flex items-center gap-1"><GraduationCap className="h-3 w-3" /> {(doctor as any).qualification}</span>
+                    <span className="text-xs text-muted-foreground flex items-center gap-1"><GraduationCap className="h-3 w-3" /> {(doctor as any).qualification}</span>
                   )}
                   {(doctor as any).years_of_experience && (
-                    <span className="text-xs">{(doctor as any).years_of_experience} yrs experience</span>
+                    <span className="text-xs text-muted-foreground">{(doctor as any).years_of_experience} yrs experience</span>
                   )}
                   {(doctor as any).consultation_fee && (
-                    <span className="text-xs flex items-center gap-0.5"><DollarSign className="h-3 w-3" />₹{(doctor as any).consultation_fee}</span>
+                    <span className="text-xs text-muted-foreground flex items-center gap-0.5"><DollarSign className="h-3 w-3" />₹{(doctor as any).consultation_fee}</span>
                   )}
-                </CardDescription>
+                </div>
               </div>
             </div>
           </CardHeader>
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <CalendarDays className="h-4 w-4 text-primary" /> Select Date
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              disabled={disabledDays}
-              className="rounded-md pointer-events-auto"
-            />
-          </CardContent>
-        </Card>
+      {hasNoSchedules && (
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            This doctor hasn't set up their schedule yet. Please check back later or choose another doctor.
+          </AlertDescription>
+        </Alert>
+      )}
 
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Clock className="h-4 w-4 text-primary" /> Select Time
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {!selectedDate ? (
-              <p className="text-muted-foreground text-sm">Please select a date first</p>
-            ) : !daySchedule ? (
-              <p className="text-muted-foreground text-sm">No schedule for this day</p>
-            ) : availableSlots.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No available slots for this date</p>
-            ) : (
-              <div className="grid grid-cols-3 gap-2 max-h-[300px] overflow-y-auto">
-                {availableSlots.map((slot) => (
-                  <Button
-                    key={slot}
-                    variant={selectedSlot === slot ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedSlot(slot)}
-                    className="text-xs"
-                  >
-                    {format(parse(slot, "HH:mm:ss", new Date()), "h:mm a")}
-                  </Button>
-                ))}
-              </div>
-            )}
+      {!hasNoSchedules && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="border-border/50">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 text-primary" /> Select Date
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                disabled={disabledDays}
+                className="rounded-md pointer-events-auto"
+              />
+            </CardContent>
+          </Card>
 
-            {selectedSlot && (
-              <Button className="w-full mt-6" onClick={handleBook} disabled={submitting}>
-                {submitting ? "Booking..." : "Confirm Appointment"}
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+          <Card className="border-border/50">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Clock className="h-4 w-4 text-primary" /> Select Time
+              </CardTitle>
+              {selectedDate && daySchedule && availableSlots.length < allSlots.length && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {allSlots.length - availableSlots.length} of {allSlots.length} slots booked — updates live
+                </p>
+              )}
+            </CardHeader>
+            <CardContent>
+              {!selectedDate ? (
+                <p className="text-muted-foreground text-sm">Please select a date first</p>
+              ) : !daySchedule ? (
+                <p className="text-muted-foreground text-sm">No schedule for this day</p>
+              ) : availableSlots.length === 0 ? (
+                <div className="space-y-3">
+                  <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription>All slots are booked for this date. Please select another date.</AlertDescription>
+                  </Alert>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2 max-h-[300px] overflow-y-auto">
+                  {availableSlots.map((slot) => (
+                    <Button
+                      key={slot}
+                      variant={selectedSlot === slot ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedSlot(slot)}
+                      className="text-xs"
+                    >
+                      {format(parse(slot, "HH:mm:ss", new Date()), "h:mm a")}
+                    </Button>
+                  ))}
+                </div>
+              )}
+
+              {selectedSlot && (
+                <Button className="w-full mt-6" onClick={handleBook} disabled={submitting}>
+                  {submitting ? "Booking..." : "Confirm Appointment"}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
