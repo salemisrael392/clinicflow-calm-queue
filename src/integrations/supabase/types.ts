@@ -99,33 +99,42 @@ export type Database = {
       doctors: {
         Row: {
           avatar_url: string | null
+          consultation_fee: number | null
           created_at: string
           id: string
           is_active: boolean
           name: string
+          qualification: string | null
           specialty: string
           updated_at: string
           user_id: string | null
+          years_of_experience: number | null
         }
         Insert: {
           avatar_url?: string | null
+          consultation_fee?: number | null
           created_at?: string
           id?: string
           is_active?: boolean
           name: string
+          qualification?: string | null
           specialty: string
           updated_at?: string
           user_id?: string | null
+          years_of_experience?: number | null
         }
         Update: {
           avatar_url?: string | null
+          consultation_fee?: number | null
           created_at?: string
           id?: string
           is_active?: boolean
           name?: string
+          qualification?: string | null
           specialty?: string
           updated_at?: string
           user_id?: string | null
+          years_of_experience?: number | null
         }
         Relationships: []
       }
