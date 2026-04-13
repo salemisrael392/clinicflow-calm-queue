@@ -53,7 +53,14 @@ export default function Auth() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await signUp(signupEmail, signupPassword, signupName, roleMode === "doctor" ? "doctor" : "user", signupSpecialty);
+      await signUp(
+        signupEmail, signupPassword, signupName,
+        roleMode === "doctor" ? "doctor" : "user",
+        signupSpecialty,
+        signupQualification || undefined,
+        signupExperience ? parseInt(signupExperience) : undefined,
+        signupFee ? parseFloat(signupFee) : undefined
+      );
       toast({ title: "Account created!", description: "You can now sign in." });
     } catch (err: any) {
       toast({ title: "Signup failed", description: err.message, variant: "destructive" });
