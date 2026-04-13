@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Activity, Stethoscope, User } from "lucide-react";
 
@@ -20,6 +21,7 @@ export default function Auth() {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupName, setSignupName] = useState("");
+  const [signupSpecialty, setSignupSpecialty] = useState("General");
 
   if (loading) {
     return (
@@ -48,7 +50,7 @@ export default function Auth() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await signUp(signupEmail, signupPassword, signupName, roleMode === "doctor" ? "doctor" : "user");
+      await signUp(signupEmail, signupPassword, signupName, roleMode === "doctor" ? "doctor" : "user", signupSpecialty);
       toast({ title: "Account created!", description: "You can now sign in." });
     } catch (err: any) {
       toast({ title: "Signup failed", description: err.message, variant: "destructive" });
