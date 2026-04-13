@@ -22,6 +22,9 @@ export default function Auth() {
   const [signupPassword, setSignupPassword] = useState("");
   const [signupName, setSignupName] = useState("");
   const [signupSpecialty, setSignupSpecialty] = useState("General");
+  const [signupQualification, setSignupQualification] = useState("");
+  const [signupExperience, setSignupExperience] = useState("");
+  const [signupFee, setSignupFee] = useState("");
 
   if (loading) {
     return (
@@ -171,8 +174,22 @@ export default function Auth() {
                           <SelectItem value="Gynecology">Gynecology</SelectItem>
                           <SelectItem value="Psychiatry">Psychiatry</SelectItem>
                           <SelectItem value="Dentistry">Dentistry</SelectItem>
-                        </SelectContent>
+                    </SelectContent>
                       </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-qualification">Qualification</Label>
+                      <Input id="signup-qualification" placeholder="MBBS, MD, etc." value={signupQualification} onChange={(e) => setSignupQualification(e.target.value)} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-experience">Years of Experience</Label>
+                        <Input id="signup-experience" type="number" min="0" placeholder="5" value={signupExperience} onChange={(e) => setSignupExperience(e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-fee">Consultation Fee (₹)</Label>
+                        <Input id="signup-fee" type="number" min="0" placeholder="500" value={signupFee} onChange={(e) => setSignupFee(e.target.value)} />
+                      </div>
                     </div>
                   )}
                   <div className="space-y-2">
