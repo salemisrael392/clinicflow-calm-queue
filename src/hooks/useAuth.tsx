@@ -9,7 +9,7 @@ interface AuthContextType {
   user: User | null;
   role: UserRole | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string, signupRole?: "user" | "doctor", specialty?: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName: string, signupRole?: "user" | "doctor", specialty?: string, qualification?: string, yearsOfExperience?: number, consultationFee?: number) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -57,12 +57,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string, signupRole?: "user" | "doctor", specialty?: string) => {
+  const signUp = async (email: string, password: string, fullName: string, signupRole?: "user" | "doctor", specialty?: string, qualification?: string, yearsOfExperience?: number, consultationFee?: number) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: fullName, signup_role: signupRole || "user", specialty: specialty || "General" },
+        data: {
+          full_name: fullName,
+          signup_role: signupRole || "user",
+          specialty: specialty || "General",
+          qualification: qualification || null,
+          years_of_experience: yearsOfExperience || null,
+          consultation_fee: consultationFee || null,
+        },
         emailRedirectTo: window.location.origin,
       },
     });
