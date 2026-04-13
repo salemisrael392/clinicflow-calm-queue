@@ -95,6 +95,20 @@ export default function ManageDoctors() {
                   <Label>Specialty</Label>
                   <Input value={form.specialty} onChange={(e) => setForm({ ...form, specialty: e.target.value })} placeholder="Cardiology" />
                 </div>
+                <div className="space-y-2">
+                  <Label>Qualification</Label>
+                  <Input value={form.qualification} onChange={(e) => setForm({ ...form, qualification: e.target.value })} placeholder="MBBS, MD, etc." />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Years of Experience</Label>
+                    <Input type="number" min="0" value={form.years_of_experience} onChange={(e) => setForm({ ...form, years_of_experience: e.target.value })} placeholder="5" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Consultation Fee (₹)</Label>
+                    <Input type="number" min="0" value={form.consultation_fee} onChange={(e) => setForm({ ...form, consultation_fee: e.target.value })} placeholder="500" />
+                  </div>
+                </div>
                 <Button onClick={handleSave} className="w-full">{editing ? "Update" : "Add"} Doctor</Button>
               </div>
             </DialogContent>
@@ -117,6 +131,20 @@ export default function ManageDoctors() {
               <div className="space-y-2">
                 <Label>Specialty</Label>
                 <Input value={form.specialty} onChange={(e) => setForm({ ...form, specialty: e.target.value })} placeholder="Cardiology" />
+              </div>
+              <div className="space-y-2">
+                <Label>Qualification</Label>
+                <Input value={form.qualification} onChange={(e) => setForm({ ...form, qualification: e.target.value })} placeholder="MBBS, MD, etc." />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Years of Experience</Label>
+                  <Input type="number" min="0" value={form.years_of_experience} onChange={(e) => setForm({ ...form, years_of_experience: e.target.value })} placeholder="5" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Consultation Fee (₹)</Label>
+                  <Input type="number" min="0" value={form.consultation_fee} onChange={(e) => setForm({ ...form, consultation_fee: e.target.value })} placeholder="500" />
+                </div>
               </div>
               <Button onClick={handleSave} className="w-full">Update Profile</Button>
             </div>
