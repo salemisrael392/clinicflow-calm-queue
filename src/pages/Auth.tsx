@@ -48,7 +48,7 @@ export default function Auth() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await signUp(signupEmail, signupPassword, signupName);
+      await signUp(signupEmail, signupPassword, signupName, roleMode === "doctor" ? "doctor" : "user");
       toast({ title: "Account created!", description: "You can now sign in." });
     } catch (err: any) {
       toast({ title: "Signup failed", description: err.message, variant: "destructive" });
@@ -56,6 +56,8 @@ export default function Auth() {
       setIsSubmitting(false);
     }
   };
+
+  const accentClass = roleMode === "doctor" ? "bg-secondary hover:bg-secondary/90" : "";
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -103,7 +105,7 @@ export default function Auth() {
               <Stethoscope className="h-6 w-6" />
             </div>
             <span className={`text-sm font-semibold ${roleMode === "doctor" ? "text-secondary" : "text-muted-foreground"}`}>
-              Doctor / Admin
+              Doctor
             </span>
           </button>
         </div>
@@ -111,24 +113,19 @@ export default function Auth() {
         <Card className="shadow-lg border-border/50">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl">
-              {roleMode === "patient" ? "Patient Portal" : "Doctor / Admin Portal"}
+              {roleMode === "patient" ? "Patient Portal" : "Doctor Portal"}
             </CardTitle>
             <CardDescription>
               {roleMode === "patient"
                 ? "Sign in to book appointments and track your queue"
-                : "Sign in to manage schedules and patient queues"}
+                : "Sign in to manage your schedule and patient queues"}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="login">Sign In</TabsTrigger>
-                {roleMode === "patient" && <TabsTrigger value="signup">Sign Up</TabsTrigger>}
-                {roleMode === "doctor" && (
-                  <TabsTrigger value="signup" disabled className="opacity-50">
-                    Sign Up
-                  </TabsTrigger>
-                )}
+                <TabsTrigger value="signup">Sign Up</TabsTrigger>
               </TabsList>
 
               <TabsContent value="login">
@@ -141,42 +138,30 @@ export default function Auth() {
                     <Label htmlFor="login-password">Password</Label>
                     <Input id="login-password" type="password" placeholder="••••••••" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
                   </div>
-                  <Button
-                    type="submit"
-                    className={`w-full ${roleMode === "doctor" ? "bg-secondary hover:bg-secondary/90" : ""}`}
-                    disabled={isSubmitting}
-                  >
+                  <Button type="submit" className={`w-full ${accentClass}`} disabled={isSubmitting}>
                     {isSubmitting ? "Signing in..." : `Sign In as ${roleMode === "patient" ? "Patient" : "Doctor"}`}
                   </Button>
                 </form>
               </TabsContent>
 
               <TabsContent value="signup">
-                {roleMode === "patient" ? (
-                  <form onSubmit={handleSignup} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-name">Full Name</Label>
-                      <Input id="signup-name" placeholder="John Doe" value={signupName} onChange={(e) => setSignupName(e.target.value)} required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email</Label>
-                      <Input id="signup-email" type="email" placeholder="you@example.com" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-password">Password</Label>
-                      <Input id="signup-password" type="password" placeholder="••••••••" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required minLength={6} />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                      {isSubmitting ? "Creating account..." : "Create Patient Account"}
-                    </Button>
-                  </form>
-                ) : (
-                  <div className="text-center py-6 text-muted-foreground text-sm">
-                    <Stethoscope className="h-8 w-8 mx-auto mb-3 opacity-50" />
-                    <p>Doctor accounts are created by administrators.</p>
-                    <p className="mt-1">Contact your clinic admin for access.</p>
+                <form onSubmit={handleSignup} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-name">Full Name</Label>
+                    <Input id="signup-name" placeholder={roleMode === "doctor" ? "Dr. Jane Smith" : "John Doe"} value={signupName} onChange={(e) => setSignupName(e.target.value)} required />
                   </div>
-                )}
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email">Email</Label>
+                    <Input id="signup-email" type="email" placeholder="you@example.com" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password">Password</Label>
+                    <Input id="signup-password" type="password" placeholder="••••••••" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required minLength={6} />
+                  </div>
+                  <Button type="submit" className={`w-full ${accentClass}`} disabled={isSubmitting}>
+                    {isSubmitting ? "Creating account..." : `Create ${roleMode === "patient" ? "Patient" : "Doctor"} Account`}
+                  </Button>
+                </form>
               </TabsContent>
             </Tabs>
           </CardContent>
