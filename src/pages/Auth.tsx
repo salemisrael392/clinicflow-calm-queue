@@ -152,6 +152,29 @@ export default function Auth() {
                     <Label htmlFor="signup-name">Full Name</Label>
                     <Input id="signup-name" placeholder={roleMode === "doctor" ? "Dr. Jane Smith" : "John Doe"} value={signupName} onChange={(e) => setSignupName(e.target.value)} required />
                   </div>
+                  {roleMode === "doctor" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-specialty">Specialty</Label>
+                      <Select value={signupSpecialty} onValueChange={setSignupSpecialty}>
+                        <SelectTrigger id="signup-specialty">
+                          <SelectValue placeholder="Select specialty" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="General">General Medicine</SelectItem>
+                          <SelectItem value="Cardiology">Cardiology</SelectItem>
+                          <SelectItem value="Dermatology">Dermatology</SelectItem>
+                          <SelectItem value="Neurology">Neurology</SelectItem>
+                          <SelectItem value="Orthopedics">Orthopedics</SelectItem>
+                          <SelectItem value="Pediatrics">Pediatrics</SelectItem>
+                          <SelectItem value="Ophthalmology">Ophthalmology</SelectItem>
+                          <SelectItem value="ENT">ENT</SelectItem>
+                          <SelectItem value="Gynecology">Gynecology</SelectItem>
+                          <SelectItem value="Psychiatry">Psychiatry</SelectItem>
+                          <SelectItem value="Dentistry">Dentistry</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
                     <Input id="signup-email" type="email" placeholder="you@example.com" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required />
