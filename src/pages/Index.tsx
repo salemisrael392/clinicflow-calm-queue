@@ -15,7 +15,7 @@ export default function Index() {
   }
 
   if (!user) return <Navigate to="/auth" replace />;
-  if (role === "admin") return <Navigate to="/admin" replace />;
+  if (role === "admin" || role === "doctor") return <Navigate to="/admin" replace />;
 
   return <PatientDashboard />;
 }

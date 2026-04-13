@@ -36,7 +36,7 @@ export function AppSidebar() {
   const { role, signOut, user } = useAuth();
   const location = useLocation();
 
-  const items = role === "admin" ? adminItems : patientItems;
+  const items = role === "admin" ? adminItems : role === "doctor" ? adminItems : patientItems;
   const isActive = (path: string) => location.pathname === path;
 
   return (

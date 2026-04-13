@@ -40,7 +40,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
       <Activity className="h-8 w-8 animate-pulse-soft text-primary" />
     </div>
   );
-  if (role !== "admin") return <Navigate to="/" replace />;
+  if (role !== "admin" && role !== "doctor") return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
