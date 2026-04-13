@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays, Clock, Stethoscope, Users } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CalendarDays, DollarSign, GraduationCap, Stethoscope, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -16,6 +17,7 @@ export default function PatientDashboard() {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [upcomingCount, setUpcomingCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [filterSpecialty, setFilterSpecialty] = useState<string>("all");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,7 +37,8 @@ export default function PatientDashboard() {
     fetchData();
   }, [user]);
 
-  const specialties = [...new Set(doctors.map((d) => d.specialty))];
+  const specialties = [...new Set(doctors.map((d) => d.specialty))].sort();
+  const filteredDoctors = filterSpecialty === "all" ? doctors : doctors.filter(d => d.specialty === filterSpecialty);
 
   return (
     <div className="space-y-8">
@@ -83,11 +86,24 @@ export default function PatientDashboard() {
 
       {/* Doctors */}
       <div>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <h2 className="text-lg font-semibold text-foreground">Available Doctors</h2>
-          <Button variant="outline" size="sm" onClick={() => navigate("/appointments")}>
-            View My Appointments
-          </Button>
+          <div className="flex items-center gap-3">
+            <Select value={filterSpecialty} onValueChange={setFilterSpecialty}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by specialty" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Specialties</SelectItem>
+                {specialties.map(s => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" onClick={() => navigate("/appointments")}>
+              View My Appointments
+            </Button>
+          </div>
         </div>
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -99,7 +115,7 @@ export default function PatientDashboard() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {doctors.map((doctor) => (
+            {filteredDoctors.map((doctor) => (
               <Card key={doctor.id} className="border-border/50 hover:shadow-md transition-shadow cursor-pointer group" onClick={() => navigate(`/book/${doctor.id}`)}>
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
@@ -109,6 +125,21 @@ export default function PatientDashboard() {
                     <div className="min-w-0">
                       <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{doctor.name}</h3>
                       <Badge variant="secondary" className="mt-1">{doctor.specialty}</Badge>
+                      {(doctor as any).qualification && (
+                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                          <GraduationCap className="h-3 w-3" /> {(doctor as any).qualification}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                        {(doctor as any).years_of_experience && (
+                          <span>{(doctor as any).years_of_experience} yrs exp</span>
+                        )}
+                        {(doctor as any).consultation_fee && (
+                          <span className="flex items-center gap-0.5">
+                            <DollarSign className="h-3 w-3" />₹{(doctor as any).consultation_fee}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <Button className="w-full mt-4" size="sm">
@@ -117,9 +148,9 @@ export default function PatientDashboard() {
                 </CardContent>
               </Card>
             ))}
-            {doctors.length === 0 && (
+            {filteredDoctors.length === 0 && (
               <div className="col-span-full text-center py-12 text-muted-foreground">
-                No doctors available at the moment.
+                No doctors available{filterSpecialty !== "all" ? ` for ${filterSpecialty}` : ""}.
               </div>
             )}
           </div>

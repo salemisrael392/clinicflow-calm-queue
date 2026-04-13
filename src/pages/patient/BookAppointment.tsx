@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, CalendarDays, CheckCircle2, Clock } from "lucide-react";
+import { ArrowLeft, CalendarDays, CheckCircle2, Clock, GraduationCap, DollarSign } from "lucide-react";
 import { format, addMinutes, parse, isToday, isBefore } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -159,8 +159,17 @@ export default function BookAppointment() {
               </div>
               <div>
                 <CardTitle>{doctor.name}</CardTitle>
-                <CardDescription>
-                  <Badge variant="secondary" className="mt-1">{doctor.specialty}</Badge>
+                <CardDescription className="flex flex-wrap items-center gap-2 mt-1">
+                  <Badge variant="secondary">{doctor.specialty}</Badge>
+                  {(doctor as any).qualification && (
+                    <span className="text-xs flex items-center gap-1"><GraduationCap className="h-3 w-3" /> {(doctor as any).qualification}</span>
+                  )}
+                  {(doctor as any).years_of_experience && (
+                    <span className="text-xs">{(doctor as any).years_of_experience} yrs experience</span>
+                  )}
+                  {(doctor as any).consultation_fee && (
+                    <span className="text-xs flex items-center gap-0.5"><DollarSign className="h-3 w-3" />₹{(doctor as any).consultation_fee}</span>
+                  )}
                 </CardDescription>
               </div>
             </div>

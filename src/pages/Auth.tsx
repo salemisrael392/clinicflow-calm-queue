@@ -22,6 +22,9 @@ export default function Auth() {
   const [signupPassword, setSignupPassword] = useState("");
   const [signupName, setSignupName] = useState("");
   const [signupSpecialty, setSignupSpecialty] = useState("General");
+  const [signupQualification, setSignupQualification] = useState("");
+  const [signupExperience, setSignupExperience] = useState("");
+  const [signupFee, setSignupFee] = useState("");
 
   if (loading) {
     return (
@@ -50,7 +53,14 @@ export default function Auth() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await signUp(signupEmail, signupPassword, signupName, roleMode === "doctor" ? "doctor" : "user", signupSpecialty);
+      await signUp(
+        signupEmail, signupPassword, signupName,
+        roleMode === "doctor" ? "doctor" : "user",
+        signupSpecialty,
+        signupQualification || undefined,
+        signupExperience ? parseInt(signupExperience) : undefined,
+        signupFee ? parseFloat(signupFee) : undefined
+      );
       toast({ title: "Account created!", description: "You can now sign in." });
     } catch (err: any) {
       toast({ title: "Signup failed", description: err.message, variant: "destructive" });
@@ -153,27 +163,43 @@ export default function Auth() {
                     <Input id="signup-name" placeholder={roleMode === "doctor" ? "Dr. Jane Smith" : "John Doe"} value={signupName} onChange={(e) => setSignupName(e.target.value)} required />
                   </div>
                   {roleMode === "doctor" && (
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-specialty">Specialty</Label>
-                      <Select value={signupSpecialty} onValueChange={setSignupSpecialty}>
-                        <SelectTrigger id="signup-specialty">
-                          <SelectValue placeholder="Select specialty" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="General">General Medicine</SelectItem>
-                          <SelectItem value="Cardiology">Cardiology</SelectItem>
-                          <SelectItem value="Dermatology">Dermatology</SelectItem>
-                          <SelectItem value="Neurology">Neurology</SelectItem>
-                          <SelectItem value="Orthopedics">Orthopedics</SelectItem>
-                          <SelectItem value="Pediatrics">Pediatrics</SelectItem>
-                          <SelectItem value="Ophthalmology">Ophthalmology</SelectItem>
-                          <SelectItem value="ENT">ENT</SelectItem>
-                          <SelectItem value="Gynecology">Gynecology</SelectItem>
-                          <SelectItem value="Psychiatry">Psychiatry</SelectItem>
-                          <SelectItem value="Dentistry">Dentistry</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-specialty">Specialty</Label>
+                        <Select value={signupSpecialty} onValueChange={setSignupSpecialty}>
+                          <SelectTrigger id="signup-specialty">
+                            <SelectValue placeholder="Select specialty" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="General">General Medicine</SelectItem>
+                            <SelectItem value="Cardiology">Cardiology</SelectItem>
+                            <SelectItem value="Dermatology">Dermatology</SelectItem>
+                            <SelectItem value="Neurology">Neurology</SelectItem>
+                            <SelectItem value="Orthopedics">Orthopedics</SelectItem>
+                            <SelectItem value="Pediatrics">Pediatrics</SelectItem>
+                            <SelectItem value="Ophthalmology">Ophthalmology</SelectItem>
+                            <SelectItem value="ENT">ENT</SelectItem>
+                            <SelectItem value="Gynecology">Gynecology</SelectItem>
+                            <SelectItem value="Psychiatry">Psychiatry</SelectItem>
+                            <SelectItem value="Dentistry">Dentistry</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-qualification">Qualification</Label>
+                        <Input id="signup-qualification" placeholder="MBBS, MD, etc." value={signupQualification} onChange={(e) => setSignupQualification(e.target.value)} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-experience">Years of Experience</Label>
+                          <Input id="signup-experience" type="number" min="0" placeholder="5" value={signupExperience} onChange={(e) => setSignupExperience(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-fee">Consultation Fee (₹)</Label>
+                          <Input id="signup-fee" type="number" min="0" placeholder="500" value={signupFee} onChange={(e) => setSignupFee(e.target.value)} />
+                        </div>
+                      </div>
+                    </>
                   )}
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
