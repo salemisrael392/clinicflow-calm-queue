@@ -69,7 +69,7 @@ export default function ManageSchedules() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{isDoctor ? "My Schedule" : "Manage Schedules"}</h1>
+          <h1 className="text-4xl text-foreground">{isDoctor ? "My Schedule" : "Manage Schedules"}</h1>
           <p className="text-muted-foreground mt-1">{isDoctor ? "Set your availability" : "Set doctor availability"}</p>
         </div>
       </div>

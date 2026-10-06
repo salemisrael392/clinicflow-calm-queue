@@ -55,7 +55,7 @@ export default function QueueBoard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-foreground p-8">
+    <div className="min-h-screen bg-deep p-5 sm:p-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
@@ -63,7 +63,7 @@ export default function QueueBoard() {
             <Activity className="h-7 w-7 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-background">Clinic Flow</h1>
+            <h1 className="text-4xl text-background">Clinic Flow</h1>
             <p className="text-background/60 text-sm">Live Queue Display</p>
           </div>
         </div>
@@ -76,12 +76,12 @@ export default function QueueBoard() {
       {/* Board Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {entries.map((entry, i) => (
-          <div key={i} className="rounded-2xl bg-background/10 backdrop-blur-sm border border-background/20 p-6">
+          <div key={i} className="rounded-lg bg-background/10 backdrop-blur-sm border border-background/20 p-6 shadow-xl">
             <div className="mb-4">
               <h3 className="text-lg font-bold text-background">{entry.doctorName}</h3>
               <p className="text-sm text-background/60">{entry.specialty}</p>
             </div>
-            <div className="bg-primary/20 rounded-xl p-5 text-center mb-4">
+            <div className="bg-primary/20 rounded-md p-5 text-center mb-4">
               <p className="text-xs text-background/60 uppercase tracking-wider mb-1">Now Serving</p>
               <p className={`text-5xl font-extrabold ${entry.currentToken ? "text-primary animate-pulse-soft" : "text-background/30"}`}>
                 {entry.currentToken ?? "—"}

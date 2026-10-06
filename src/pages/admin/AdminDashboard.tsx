@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { CalendarDays, Stethoscope, Users, ListOrdered } from "lucide-react";
+import { CalendarDays, Stethoscope, ListOrdered } from "lucide-react";
 import { format } from "date-fns";
 
 export default function AdminDashboard() {
@@ -33,9 +33,10 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Overview of Clinic Flow operations</p>
+      <div className="border-b border-border/70 pb-6">
+        <p className="text-sm font-semibold text-primary">Clinic operations</p>
+        <h1 className="mt-1 text-4xl text-foreground">Admin Dashboard</h1>
+        <p className="text-muted-foreground mt-2">A clear view of today's care flow.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -46,7 +47,7 @@ export default function AdminDashboard() {
                 <c.icon className={`h-6 w-6 ${c.color}`} />
               </div>
               <div>
-                <p className="text-2xl font-bold">{c.value}</p>
+                <p className="text-3xl font-display">{c.value}</p>
                 <p className="text-sm text-muted-foreground">{c.label}</p>
               </div>
             </CardContent>

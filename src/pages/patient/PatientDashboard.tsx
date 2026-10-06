@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CalendarDays, DollarSign, GraduationCap, Stethoscope, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Tables } from "@/integrations/supabase/types";
+import doctorConsultation from "@/assets/doctor-consultation.jpg";
 
 type Doctor = Tables<"doctors">;
 
@@ -42,10 +43,15 @@ export default function PatientDashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Welcome back!</h1>
-        <p className="text-muted-foreground mt-1">Book appointments and track your queue position</p>
-      </div>
+      <section className="relative min-h-[260px] overflow-hidden rounded-lg">
+        <img src={doctorConsultation} alt="Doctor speaking with a patient" loading="lazy" width={1600} height={1072} className="absolute inset-0 h-full w-full object-cover object-center" />
+        <div className="absolute inset-0 bg-gradient-to-r from-deep/90 via-deep/65 to-transparent" />
+        <div className="relative z-10 flex min-h-[260px] max-w-xl flex-col justify-center p-7 sm:p-10 text-primary-foreground">
+          <p className="mb-2 text-sm font-semibold text-primary-foreground/75">Your care dashboard</p>
+          <h1 className="text-4xl sm:text-5xl">Welcome back.</h1>
+          <p className="mt-3 max-w-md text-primary-foreground/85">Find the right doctor, choose a time, and follow your live queue in one calm place.</p>
+        </div>
+      </section>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -55,7 +61,7 @@ export default function PatientDashboard() {
               <CalendarDays className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{upcomingCount}</p>
+              <p className="text-3xl font-display">{upcomingCount}</p>
               <p className="text-sm text-muted-foreground">Upcoming</p>
             </div>
           </CardContent>
@@ -66,7 +72,7 @@ export default function PatientDashboard() {
               <Stethoscope className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{doctors.length}</p>
+              <p className="text-3xl font-display">{doctors.length}</p>
               <p className="text-sm text-muted-foreground">Doctors Available</p>
             </div>
           </CardContent>
@@ -77,7 +83,7 @@ export default function PatientDashboard() {
               <Users className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{specialties.length}</p>
+              <p className="text-3xl font-display">{specialties.length}</p>
               <p className="text-sm text-muted-foreground">Specialties</p>
             </div>
           </CardContent>
@@ -87,7 +93,7 @@ export default function PatientDashboard() {
       {/* Doctors */}
       <div>
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-          <h2 className="text-lg font-semibold text-foreground">Available Doctors</h2>
+          <h2 className="text-3xl text-foreground">Available Doctors</h2>
           <div className="flex items-center gap-3">
             <Select value={filterSpecialty} onValueChange={setFilterSpecialty}>
               <SelectTrigger className="w-[180px]">
@@ -116,14 +122,14 @@ export default function PatientDashboard() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredDoctors.map((doctor) => (
-              <Card key={doctor.id} className="border-border/50 hover:shadow-md transition-shadow cursor-pointer group" onClick={() => navigate(`/book/${doctor.id}`)}>
+              <Card key={doctor.id} className="border-border/60 hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer group" onClick={() => navigate(`/book/${doctor.id}`)}>
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <div className="h-14 w-14 rounded-full bg-accent flex items-center justify-center shrink-0 text-lg font-bold text-accent-foreground">
                       {doctor.name.split(" ").map(n => n[0]).join("")}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{doctor.name}</h3>
+                      <h3 className="text-xl text-foreground group-hover:text-primary transition-colors">{doctor.name}</h3>
                       <Badge variant="secondary" className="mt-1">{doctor.specialty}</Badge>
                       {(doctor as any).qualification && (
                         <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
