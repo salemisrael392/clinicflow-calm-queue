@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Activity, Stethoscope, User } from "lucide-react";
+import { Activity, ArrowRight, ShieldCheck, Stethoscope, User } from "lucide-react";
+import clinicLobby from "@/assets/clinic-lobby.jpg";
 
 export default function Auth() {
   const { user, loading, signIn, signUp } = useAuth();
@@ -72,59 +73,45 @@ export default function Auth() {
   const accentClass = roleMode === "doctor" ? "bg-secondary hover:bg-secondary/90" : "";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
-              <Activity className="h-6 w-6 text-primary-foreground" />
+    <div className="min-h-screen lg:grid lg:grid-cols-[1.08fr_0.92fr] bg-background">
+      <section className="relative min-h-[32vh] lg:min-h-screen overflow-hidden">
+        <img src={clinicLobby} alt="Bright Clinic Flow hospital lobby" width={1920} height={1280} className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-deep/80 via-deep/15 to-transparent" />
+        <div className="relative z-10 flex h-full min-h-[32vh] lg:min-h-screen flex-col justify-between p-6 sm:p-10 lg:p-14 text-primary-foreground">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-md bg-background/90 text-primary shadow-lg backdrop-blur">
+              <Activity className="h-6 w-6" />
             </div>
-            <h1 className="text-3xl font-bold text-foreground">Clinic Flow</h1>
+            <span className="font-display text-3xl">Clinic Flow</span>
           </div>
-          <p className="text-muted-foreground">Hospital Appointment Scheduling</p>
+          <div className="max-w-xl pb-2 lg:pb-8">
+            <p className="mb-4 text-sm font-semibold uppercase text-primary-foreground/80">Care, without the waiting-room uncertainty</p>
+            <h1 className="text-4xl leading-tight sm:text-5xl lg:text-6xl">Your care journey, clearly arranged.</h1>
+            <p className="mt-5 max-w-lg text-base leading-relaxed text-primary-foreground/85">Book trusted doctors, receive your token, and follow the queue from wherever you are.</p>
+          </div>
         </div>
+      </section>
 
-        {/* Role Selector */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <button
-            onClick={() => setRoleMode("patient")}
-            className={`flex flex-col items-center gap-2 rounded-xl border-2 p-5 transition-all ${
-              roleMode === "patient"
-                ? "border-primary bg-accent shadow-sm"
-                : "border-border bg-card hover:border-primary/40"
-            }`}
-          >
-            <div className={`h-12 w-12 rounded-full flex items-center justify-center ${
-              roleMode === "patient" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-            }`}>
-              <User className="h-6 w-6" />
-            </div>
-            <span className={`text-sm font-semibold ${roleMode === "patient" ? "text-primary" : "text-muted-foreground"}`}>
-              Patient
-            </span>
-          </button>
-          <button
-            onClick={() => setRoleMode("doctor")}
-            className={`flex flex-col items-center gap-2 rounded-xl border-2 p-5 transition-all ${
-              roleMode === "doctor"
-                ? "border-secondary bg-secondary/10 shadow-sm"
-                : "border-border bg-card hover:border-secondary/40"
-            }`}
-          >
-            <div className={`h-12 w-12 rounded-full flex items-center justify-center ${
-              roleMode === "doctor" ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground"
-            }`}>
-              <Stethoscope className="h-6 w-6" />
-            </div>
-            <span className={`text-sm font-semibold ${roleMode === "doctor" ? "text-secondary" : "text-muted-foreground"}`}>
-              Doctor
-            </span>
-          </button>
-        </div>
+      <section className="relative flex min-h-[68vh] items-center justify-center overflow-y-auto p-4 sm:p-8 lg:p-12">
+        <div className="absolute inset-0 bg-accent/35" />
+        <div className="relative z-10 w-full max-w-lg py-8">
+          <div className="mb-6">
+            <p className="text-sm font-semibold text-primary">Choose your portal</p>
+            <h2 className="mt-1 text-4xl text-foreground">Welcome to Clinic Flow</h2>
+          </div>
 
-        <Card className="shadow-lg border-border/50">
+          <div className="mb-5 grid grid-cols-2 gap-3 rounded-lg border border-border/60 bg-card/55 p-1.5 backdrop-blur-md">
+            <Button type="button" variant="ghost" onClick={() => setRoleMode("patient")} className={`h-16 flex-col gap-1 ${roleMode === "patient" ? "bg-card text-primary shadow-sm hover:bg-card" : "text-muted-foreground"}`}>
+              <User className="h-5 w-5" /><span>Patient</span>
+            </Button>
+            <Button type="button" variant="ghost" onClick={() => setRoleMode("doctor")} className={`h-16 flex-col gap-1 ${roleMode === "doctor" ? "bg-card text-secondary shadow-sm hover:bg-card" : "text-muted-foreground"}`}>
+              <Stethoscope className="h-5 w-5" /><span>Doctor</span>
+            </Button>
+          </div>
+
+          <Card className="glass-panel border-background/70">
           <CardHeader className="pb-4">
-            <CardTitle className="text-xl">
+            <CardTitle className="text-3xl">
               {roleMode === "patient" ? "Patient Portal" : "Doctor Portal"}
             </CardTitle>
             <CardDescription>
@@ -150,8 +137,9 @@ export default function Auth() {
                     <Label htmlFor="login-password">Password</Label>
                     <Input id="login-password" type="password" placeholder="••••••••" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
                   </div>
-                  <Button type="submit" className={`w-full ${accentClass}`} disabled={isSubmitting}>
+                  <Button type="submit" size="lg" className={`w-full ${accentClass}`} disabled={isSubmitting}>
                     {isSubmitting ? "Signing in..." : `Sign In as ${roleMode === "patient" ? "Patient" : "Doctor"}`}
+                    {!isSubmitting && <ArrowRight className="h-4 w-4" />}
                   </Button>
                 </form>
               </TabsContent>
@@ -209,15 +197,19 @@ export default function Auth() {
                     <Label htmlFor="signup-password">Password</Label>
                     <Input id="signup-password" type="password" placeholder="••••••••" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required minLength={6} />
                   </div>
-                  <Button type="submit" className={`w-full ${accentClass}`} disabled={isSubmitting}>
+                  <Button type="submit" size="lg" className={`w-full ${accentClass}`} disabled={isSubmitting}>
                     {isSubmitting ? "Creating account..." : `Create ${roleMode === "patient" ? "Patient" : "Doctor"} Account`}
                   </Button>
                 </form>
               </TabsContent>
             </Tabs>
+            <div className="mt-6 flex items-center justify-center gap-2 border-t border-border/60 pt-5 text-xs text-muted-foreground">
+              <ShieldCheck className="h-4 w-4 text-secondary" /> Secure access to your care journey
+            </div>
           </CardContent>
-        </Card>
-      </div>
+          </Card>
+        </div>
+      </section>
     </div>
   );
 }
