@@ -49,11 +49,11 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <div className="p-4 flex items-center gap-2">
-        <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center shrink-0">
+      <div className="p-4 flex items-center gap-3 border-b border-sidebar-border/70">
+        <div className="h-9 w-9 rounded-md bg-primary flex items-center justify-center shrink-0 shadow-sm">
           <Activity className="h-5 w-5 text-primary-foreground" />
         </div>
-        {!collapsed && <span className="text-lg font-bold text-foreground">Clinic Flow</span>}
+        {!collapsed && <span className="font-display text-2xl text-foreground">Clinic Flow</span>}
       </div>
 
       <SidebarContent>
@@ -67,8 +67,8 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end
-                      className="hover:bg-sidebar-accent/50"
-                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                      className="hover:bg-sidebar-accent/60"
+                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
                     >
                       <item.icon className="mr-2 h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
