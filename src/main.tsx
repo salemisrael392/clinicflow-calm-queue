@@ -7,5 +7,8 @@ import "@fontsource/work-sans/500.css";
 import "@fontsource/work-sans/600.css";
 import "@fontsource/work-sans/700.css";
 
+import { applyStoredContrast } from "./hooks/useHighContrast";
+
+applyStoredContrast();
 const root = document.getElementById("root");
 if (root) createRoot(root).render(<App />);

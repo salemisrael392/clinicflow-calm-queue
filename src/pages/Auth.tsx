@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Activity, ArrowRight, ShieldCheck, Stethoscope, User } from "lucide-react";
 import clinicLobby from "@/assets/clinic-lobby.jpg";
+import { ContrastToggle } from "@/components/ContrastToggle";
 
 export default function Auth() {
   const { user, loading, signIn, signUp } = useAuth();
@@ -95,6 +96,7 @@ export default function Auth() {
       <section className="relative flex min-h-[68vh] items-center justify-center overflow-y-auto p-4 sm:p-8 lg:p-12">
         <div className="absolute inset-0 bg-accent/35" />
         <div className="relative z-10 w-full max-w-lg py-8">
+          <ContrastToggle className="mb-6 w-fit ml-auto" />
           <div className="mb-6">
             <p className="text-sm font-semibold text-primary">Choose your portal</p>
             <h2 className="mt-1 text-4xl text-foreground">Welcome to Clinic Flow</h2>
