@@ -90,6 +90,53 @@
     --sidebar-border: 210 30% 18%;
     --sidebar-ring: 199 89% 48%;
   }
+
+  .high-contrast {
+    --background: 0 0% 100%;
+    --foreground: 184 60% 6%;
+    --card: 0 0% 100%;
+    --card-foreground: 184 60% 6%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 184 60% 6%;
+    --primary: 186 95% 18%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 80% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 164 20% 92%;
+    --muted-foreground: 184 50% 12%;
+    --accent: 45 95% 70%;
+    --accent-foreground: 184 60% 6%;
+    --destructive: 0 85% 32%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 184 60% 10%;
+    --input: 184 60% 10%;
+    --ring: 45 100% 45%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 184 60% 6%;
+    --sidebar-primary: 186 95% 18%;
+    --sidebar-accent: 45 95% 70%;
+    --sidebar-accent-foreground: 184 60% 6%;
+    --sidebar-border: 184 60% 10%;
+    --sidebar-ring: 45 100% 45%;
+    --success: 160 80% 20%;
+    --warning: 45 95% 55%;
+    --warning-foreground: 184 60% 6%;
+    --glass: 0 0% 100%;
+    --glass-border: 184 60% 10%;
+  }
+}
+
+@layer base {
+  .high-contrast .glass-panel {
+    background: hsl(0 0% 100%);
+    backdrop-filter: none;
+    border-width: 2px;
+  }
+  .high-contrast *:focus-visible {
+    outline: 3px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+  .high-contrast a { text-decoration: underline; }
 }
 
 @layer base {
